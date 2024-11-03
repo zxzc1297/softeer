@@ -19,51 +19,47 @@ import java.util.*;
  * 2
  */
 public class boj_13549 {
-    static int[] visited = new int[100001];  // 방문 시간을 기록하는 배열
-
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        int N = sc.nextInt();
-        int K = sc.nextInt();
+        int N = sc.nextInt();  // 수빈이의 위치
+        int K = sc.nextInt();  // 동생의 위치
 
-        if (N >= K) {
-            System.out.println(N - K);  // N이 K보다 크거나 같으면 그냥 걷는 것이 최단 시간
-        } else {
-            System.out.println(bfs(N, K));
+        // 수빈이가 이미 동생의 위치에 있는 경우
+        if (N == K) {
+            System.out.println(0);
+            return;
         }
-    }
 
-    static int bfs(int start, int target) {
+        // BFS를 위한 큐와 방문 배열
         Queue<Integer> queue = new LinkedList<>();
-        queue.offer(start);
-        visited[start] = 1;  // 시작점 방문 처리 (0초를 나타내기 위해 1로 설정)
+        int[] visited = new int[100001];  // 방문 시간 저장 배열
+
+        queue.offer(N);
+        visited[N] = 1;  // 시작 위치 방문 처리 (0초가 아닌 1로 시작해 나중에 -1 처리)
 
         while (!queue.isEmpty()) {
             int current = queue.poll();
 
-            // 동생의 위치에 도달하면 시간을 반환
-            if (current == target) {
-                return visited[current] - 1;
-            }
+            // 현재 위치에서 이동 가능한 위치 계산
+            for (int next : new int[]{current * 2, current - 1, current + 1}) {
+                // next 위치가 범위 내에 있고 아직 방문하지 않은 경우
+                if (next >= 0 && next <= 100000 && visited[next] == 0) {
+                    // 순간이동인 경우에는 0초 소요
+                    if (next == current * 2) {
+                        visited[next] = visited[current];
+                        queue.add(next);  // 높은 우선순위로 처리하기 위해 먼저 큐에 넣기
+                    } else {
+                        visited[next] = visited[current] + 1;  // 걷는 경우 1초 추가
+                        queue.offer(next);
+                    }
 
-            // 걷기: X-1, X+1로 이동
-            if (current - 1 >= 0 && visited[current - 1] == 0) {
-                visited[current - 1] = visited[current] + 1;
-                queue.offer(current - 1);
-            }
-
-            if (current + 1 <= MAX && visited[current + 1] == 0) {
-                visited[current + 1] = visited[current] + 1;
-                queue.offer(current + 1);
-            }
-
-            // 순간이동: 2*X로 이동
-            if (current * 2 <= MAX && visited[current * 2] == 0) {
-                visited[current * 2] = visited[current];
-                queue.offer(current * 2);
+                    // 동생의 위치에 도달한 경우 최단 시간 출력
+                    if (next == K) {
+                        System.out.println(visited[next] - 1);
+                        return;
+                    }
+                }
             }
         }
-
-        return -1;  // 논리상 이 코드는 실행되지 않음
     }
 }
